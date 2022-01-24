@@ -69,4 +69,46 @@ In InstB container terminal, run:
     TEST
     
  You should see the global set of TEST in InstA being replicated in InstB
+ 
+#InstA Outage
+
+In the event of an outage on the master node (InstA), the following process can followed:
+
+Cease all further transations to the database on any node
+
+Create a new node/instance:
+
+     docker run --name instC --hostname instC --rm -v $PWD/yotta-init:/home/yotta -it docker.io/yottadb/yottadb-base /bin/bash
     
+Add the container to the docker network
+
+     docker network connect yotta-dr instB
+     
+On InstB terminal:
+
+     mupip replicate -receiver -shutdown
+     mupip replicate -source -shutdown
+     
+     # Backup the database to a shared folder
+     
+     mupip backup -bytestream -transaction=1 "*" /home/yotta
+     
+On InstC terminal:
+
+     mupip restore /data/r1.32_x86_64/g/yottadb/yotta.dat /home/yotta/yotta.dat
+
+On InstB, recreate replication:
+
+    mupip set -replication=on -region "*"
+    mupip replicate -instance_create -name=instB
+    mupip replicate -source -start -instsecondary=instC -secondary=instC:4001 -buffsize=1048576 -log=/root/A_B.log
+    mupip backup -replinst=instB
+    # move the backup file to the shared folder
+    mv instB /home/yotta
+
+On InstC:
+
+   mupip replicate -receive -start -listenport=4001 -buffsize=1048576 -log=/root/repl_receive.log -updateresync=/home/yotta/instB
+   
+   
+Any updates on InstB should now be replicated to C and normal activity on the database can re-commence.
