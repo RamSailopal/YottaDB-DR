@@ -60,13 +60,13 @@ This will set the instance up for replication and then begin to receive replicat
 In instA container terminal, run:
 
     /opt/yottadb/current/ydb
-    **S ^TEST(1)=1**
+    S ^TEST(1)=1
     
 In InstB container terminal, run:
     
     /opt/yottadb/current/ydb
-    **D ^%G**
-    **TEST**
+    D ^%G
+    TEST
     
  You should see the global set of TEST in InstA being replicated in InstB
     
