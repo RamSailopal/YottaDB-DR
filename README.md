@@ -36,7 +36,7 @@ Add this terminal to the network as before:
 
     docker network connect yotta-dr instB
     
-In the instA container terminal, run /home/yottainit/master.sh
+In the **InstA** container terminal, run /home/yottainit/master.sh
 
 This will set the instance up for replication and then begin to send replication information to instB. The master.sh script is as follows:
 
@@ -44,7 +44,7 @@ This will set the instance up for replication and then begin to send replication
     mupip replicate -instance_create -name=instA
     mupip replicate -source -start -instsecondary=instB -secondary=172.17.0.2:4001 -buffsize=1048576 -log=/root/A_B.log
     
-In the instB container terminal, run /home/yottainit/slave.sh
+In the **InstB** container terminal, run /home/yottainit/slave.sh
 
 This will set the instance up for replication and then begin to receive replication information to instA. The slave.sh script is as follows:
     
@@ -57,12 +57,12 @@ This will set the instance up for replication and then begin to receive replicat
     mupip replicate -receive -start -listenport=4001 -buffsize=1048576 -log=/root/repl_receive.log 
     mupip replicate -receive -checkhealth
     
-In instA container terminal, run:
+In **InstA** container terminal, run:
 
     /opt/yottadb/current/ydb
     S ^TEST(1)=1
     
-In InstB container terminal, run:
+In **InstB** container terminal, run:
     
     /opt/yottadb/current/ydb
     D ^%G
@@ -84,7 +84,7 @@ Add the container to the docker network
 
      docker network connect yotta-dr instB
      
-On InstB terminal:
+On **InstB** terminal:
 
      mupip replicate -receiver -shutdown
      mupip replicate -source -shutdown
@@ -93,11 +93,11 @@ On InstB terminal:
      
      mupip backup -bytestream -transaction=1 "*" /home/yotta
      
-On InstC terminal:
+On **InstC** terminal:
 
      mupip restore /data/r1.32_x86_64/g/yottadb/yotta.dat /home/yotta/yotta.dat
 
-On InstB, recreate replication:
+On **InstB**, recreate replication:
 
     mupip set -replication=on -region "*"
     mupip replicate -instance_create -name=instB
@@ -106,7 +106,7 @@ On InstB, recreate replication:
     # move the backup file to the shared folder
     mv instB /home/yotta
 
-On InstC:
+On **InstC**:
 
    mupip replicate -receive -start -listenport=4001 -buffsize=1048576 -log=/root/repl_receive.log -updateresync=/home/yotta/instB
    
