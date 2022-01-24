@@ -2,6 +2,10 @@
 
 This repository demonstrates disaster recovery with YottaDB using docker containers. The same process applies to GTm.
 
+Further more indepth details regarding replication and disaster recovery can be found from the official YottaDB documentation:
+
+https://docs.yottadb.com/AdminOpsGuide/dbrepl.html
+
 # Process
 
 NOTE - A number a terminal windows or tmux panel will be required for this exercise.
@@ -40,5 +44,29 @@ This will set the instance up for replication and then begin to send replication
     mupip replicate -instance_create -name=instA
     mupip replicate -source -start -instsecondary=instB -secondary=172.17.0.2:4001 -buffsize=1048576 -log=/root/A_B.log
     
+In the instB container terminal, run /home/yottainit/slave.sh
 
+This will set the instance up for replication and then begin to receive replication information to instA. The slave.sh script is as follows:
+    
+    mupip set -replication=on -region "*"
+    mupip replicate -instance_create -name=instB -noreplace
+    
+    # Now create a local journal pool for the logs
+    
+    mupip replicate -source -start -passive -instsecondary=dummy -buffsize=1048576 -log=/root/repl_source.log
+    mupip replicate -receive -start -listenport=4001 -buffsize=1048576 -log=/root/repl_receive.log 
+    mupip replicate -receive -checkhealth
+    
+In instA container terminal, run:
+
+    /opt/yottadb/current/ydb
+    S ^TEST(1)=1
+    
+In InstB container terminal, run:
+    
+    /opt/yottadb/current/ydb
+    D ^%G
+    TEST
+    
+ You should see the global set of TEST in InstA being replicated in InstB
     
