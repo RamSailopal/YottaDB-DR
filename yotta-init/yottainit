@@ -1,0 +1,5 @@
+source /opt/yottadb/current/ydb_env_set
+export ydb_gbldir="/data/r1.32_x86_64/g/yottadb"
+export ydb_repl_instance="yottadb.repl"
+export ydb_dir="/data"
+export ydb_rel="r1.32_x86_64"
