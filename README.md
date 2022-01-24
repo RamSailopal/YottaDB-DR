@@ -8,7 +8,7 @@ https://docs.yottadb.com/AdminOpsGuide/dbrepl.html
 
 # Process
 
-NOTE - A number a terminal windows or tmux panel will be required for this exercise.
+NOTE - A number a terminal windows or tmux panels will be required for this exercise.
 
 Clone the this repo:
 
@@ -16,11 +16,11 @@ Clone the this repo:
     
     cd YottaDB-DR
     
-Create a docker network called yotta-dr in order for separate containers to resolve each others IP addresses via hostname:    
+Create a docker network called **yotta-dr** in order for separate containers to resolve each other's IP addresses via hostname:    
 
     docker network create yotta-dr
     
-Create an (master) docker container called instA using the yottaDB image:
+Create an (master) docker container called instA using the yottaDB docker image:
     
     docker run --name instA --hostname instA --rm -v $PWD/yotta-init:/home/yotta -it docker.io/yottadb/yottadb-base /bin/bash
     
@@ -36,7 +36,7 @@ Add this terminal to the network as before:
 
     docker network connect yotta-dr instB
     
-In the **InstA** container terminal, run /home/yottainit/master.sh
+In the **InstA** container terminal, run **/home/yottainit/master.sh**
 
 This will set the instance up for replication and then begin to send replication information to instB. The master.sh script is as follows:
 
@@ -46,7 +46,7 @@ This will set the instance up for replication and then begin to send replication
     
 In the **InstB** container terminal, run /home/yottainit/slave.sh
 
-This will set the instance up for replication and then begin to receive replication information to instA. The slave.sh script is as follows:
+This will set the instance up for replication and then begin to receive replication information from instA. The slave.sh script is as follows:
     
     mupip set -replication=on -region "*"
     mupip replicate -instance_create -name=instB -noreplace
@@ -72,7 +72,7 @@ In **InstB** container terminal, run:
  
 #InstA Outage
 
-In the event of an outage on the master node (InstA), the following process can followed:
+In the event of an outage on the master node (InstA), the following process can be followed:
 
 Cease all further transations to the database on any node
 
@@ -82,9 +82,11 @@ Create a new node/instance:
     
 Add the container to the docker network
 
-     docker network connect yotta-dr instB
+     docker network connect yotta-dr instC
      
 On **InstB** terminal:
+
+     # Stop replication processes
 
      mupip replicate -receiver -shutdown
      mupip replicate -source -shutdown
@@ -95,20 +97,29 @@ On **InstB** terminal:
      
 On **InstC** terminal:
 
+     # Restore the database
+
      mupip restore /data/r1.32_x86_64/g/yottadb/yotta.dat /home/yotta/yotta.dat
 
-On **InstB**, recreate replication:
+On **InstB**
 
-    mupip set -replication=on -region "*"
-    mupip replicate -instance_create -name=instB
-    mupip replicate -source -start -instsecondary=instC -secondary=instC:4001 -buffsize=1048576 -log=/root/A_B.log
-    mupip backup -replinst=instB
-    # move the backup file to the shared folder
-    mv instB /home/yotta
+     # Recreate replication:
+
+     mupip set -replication=on -region "*"
+     mupip replicate -instance_create -name=instB
+     mupip replicate -source -start -instsecondary=instC -secondary=instC:4001 -buffsize=1048576 -log=/root/A_B.log
+     
+     # Backup the instance
+     
+     mupip backup -replinst=instB
+     
+     # Move the backup file to the shared folder
+     
+     mv instB /home/yotta
 
 On **InstC**:
 
-   mupip replicate -receive -start -listenport=4001 -buffsize=1048576 -log=/root/repl_receive.log -updateresync=/home/yotta/instB
+    mupip replicate -receive -start -listenport=4001 -buffsize=1048576 -log=/root/repl_receive.log -updateresync=/home/yotta/instB
    
    
 Any updates on InstB should now be replicated to C and normal activity on the database can re-commence.
