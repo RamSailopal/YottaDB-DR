@@ -122,6 +122,7 @@ On **InstB**
      mupip set -replication=on -region "*"
      mupip replicate -instance_create -name=instB
      mupip replicate -source -start -instsecondary=instC -secondary=instC:4001 -buffsize=1048576 -log=/root/A_B.log
+     cp /data/yottadb.repl /data/r1.32_x86_64/g
      
      # Backup the instance
      
