@@ -70,7 +70,7 @@ In **InstB** container terminal, run:
     
  You should see the global set of TEST in InstA being replicated in InstB
  
-#InstA Outage
+# InstA Outage
 
 In the event of an outage on the master node (InstA), the following process can be followed:
 
