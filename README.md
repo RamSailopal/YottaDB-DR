@@ -40,14 +40,28 @@ In the **InstA** container terminal, run **/home/yottainit/master.sh**
 
 This will set the instance up for replication and then begin to send replication information to instB. The master.sh script is as follows:
 
+    # Load environmental variables
+    
+    source /home/yotta/yottainit
+    source /opt/yottadb/current/ydb_env_set
+    
     mupip set -replication=on -region "*"
     mupip replicate -instance_create -name=instA
     mupip replicate -source -start -instsecondary=instB -secondary=172.17.0.2:4001 -buffsize=1048576 -log=/root/A_B.log
+    
+    # Copy the repl file to the same location as the gld file
+    
+    cp /data/yottadb.repl /data/r1.32_x86_64/g
     
 In the **InstB** container terminal, run /home/yottainit/slave.sh
 
 This will set the instance up for replication and then begin to receive replication information from instA. The slave.sh script is as follows:
     
+    # Load environmental variables
+    
+    source /home/yotta/yottainit
+    source /opt/yottadb/current/ydb_env_set
+
     mupip set -replication=on -region "*"
     mupip replicate -instance_create -name=instB -noreplace
     
